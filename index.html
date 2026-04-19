@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="utf-8">
+    <title>AETHER 10D - UI ALIGNMENT</title>
+    <style>
+        :root {
+            --accent: #1a73e8;
+            --accent-soft: rgba(26, 115, 232, 0.1);
+            --text-main: #202124;
+            --text-sub: #5f6368;
+            --bg-side: #f8f9fa;
+            --border: #e8eaed;
+            --disabled: #9aa0a6;
+        }
+
+        body { margin: 0; font-family: 'SF Pro Display', system-ui, sans-serif; display: flex; height: 100vh; background: #fff; overflow: hidden; }
+
+        /* 側邊欄核心修正 */
+        #sidebar { width: 260px; background: var(--bg-side); border-right: 1px solid var(--border); display: flex; flex-direction: column; transition: 0.3s; }
+        #sidebar.collapsed { width: 72px; } /* 縮小寬度，讓圓形更精緻 */
+        
+        .brand { height: 80px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .avatar { width: 46px; height: 46px; border-radius: 12px; cursor: pointer; border: 2px solid #fff; box-shadow: 0 4px 8px rgba(0,0,0,0.1); object-fit: cover; }
+
+        .side-ops { padding: 10px 12px; display: flex; flex-direction: column; gap: 12px; align-items: stretch; }
+        
+        /* 操作按鈕修正 */
+        .btn-action { 
+            height: 48px; border: none; background: #fff; border-radius: 24px; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2); cursor: pointer; display: flex; 
+            align-items: center; justify-content: flex-start; padding: 0 16px; transition: 0.2s; 
+            overflow: hidden;
+        }
+        /* 收合時按鈕變圓，圖標居中 */
+        #sidebar.collapsed .btn-action { padding: 0; justify-content: center; width: 48px; margin: 0 auto; }
+        
+        .btn-action.disabled { background: #eee; box-shadow: none; cursor: not-allowed; color: var(--disabled); }
+        .btn-action.disabled svg { opacity: 0.5; }
+        
+        .btn-action span { margin-left: 14px; font-weight: 600; font-size: 14px; white-space: nowrap; }
+        #sidebar.collapsed .btn-action span { display: none; }
+
+        /* 導航鏈接修正 */
+        .nav-link { 
+            height: 50px; display: flex; align-items: center; border-radius: 0 25px 25px 0; 
+            margin-right: 8px; cursor: pointer; color: var(--text-sub); transition: 0.2s; 
+        }
+        .nav-link.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+        
+        .nav-icon { width: 24px; height: 24px; margin-left: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+        .nav-txt { margin-left: 16px; font-size: 14px; white-space: nowrap; }
+        
+        /* 收合時導航圖標居中 */
+        #sidebar.collapsed .nav-link { margin-right: 0; border-radius: 0; justify-content: center; }
+        #sidebar.collapsed .nav-icon { margin-left: 0; }
+        #sidebar.collapsed .nav-txt { display: none; }
+
+        /* 其他原有樣式保持不變... */
+        main { flex: 1; display: flex; flex-direction: column; min-width: 0; position: relative; }
+        header { height: 72px; padding: 0 32px; display: flex; align-items: center; border-bottom: 1px solid var(--border); }
+        .breadcrumb { display: flex; align-items: center; font-size: 18px; font-weight: 500; color: var(--text-sub); }
+        .crumb { cursor: pointer; padding: 8px 10px; border-radius: 8px; transition: 0.2s; }
+        .crumb:hover { background: #eee; color: var(--accent); }
+        .crumb.active { color: var(--text-main); font-weight: 700; cursor: default; }
+        .crumb.active:hover { background: none; }
+
+        .toolbar { height: 56px; padding: 0 32px; display: flex; align-items: center; justify-content: flex-end; gap: 10px; }
+        .t-btn { background: #fff; border: 1px solid var(--border); padding: 8px 16px; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 500; }
+
+        .viewport { flex: 1; overflow-y: auto; padding: 20px 32px 40px; }
+        .list-h { display: grid; grid-template-columns: 3fr 1fr 1fr; padding: 12px 20px; font-size: 12px; color: var(--text-sub); border-bottom: 1px solid var(--border); }
+        .row { display: grid; grid-template-columns: 3fr 1fr 1fr; padding: 0 20px; height: 60px; align-items: center; border-radius: 12px; margin-top: 4px; cursor: pointer; border-left: 4px solid transparent; transition: 0.1s; }
+        .row:hover { background: #f8f9fa; }
+        .row.sel { background: var(--accent-soft); border-left-color: var(--accent); }
+        
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; }
+        .card { border: 1px solid var(--border); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: 0.2s; }
+        .card.sel { background: var(--accent-soft); border-color: var(--accent); }
+        .card .f-name { margin-top: 15px; font-size: 14px; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center; }
+
+        .rename-input { border: 2px solid var(--accent); padding: 4px 8px; border-radius: 4px; font-size: 14px; outline: none; width: 80%; }
+        .svg-icon { width: 24px; height: 24px; flex-shrink: 0; }
+        .svg-icon-lg { width: 64px; height: 64px; }
+    </style>
+</head>
+<body>
+
+<aside id="sidebar">
+    <div class="brand"><img src="IMG_1978.jpeg" class="avatar" onclick="toggleSide()"></div>
+    <div class="side-ops">
+        <button class="btn-action" id="btn-up" onclick="upTrigger()" title="上傳">
+            <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 5v14M8 9l4-4 4 4" fill="none" stroke="#1a73e8" stroke-width="2" stroke-linecap="round"/></svg>
+            <span>上傳</span>
+        </button>
+        <button class="btn-action" id="btn-new" onclick="makeFolder()" title="新建">
+            <svg class="svg-icon" viewBox="0 0 24 24"><path d="M4 9h16v10H4V9zM12 11.5v5M9.5 14h5" fill="none" stroke="#1a73e8" stroke-width="2" stroke-linecap="round"/></svg>
+            <span>新建</span>
+        </button>
+        <input type="file" id="up-hidden" style="display:none" onchange="onUp(this)">
+    </div>
+    <div style="margin-top:20px">
+        <div class="nav-link active" id="nav-drive" onclick="setTab('drive')">
+            <div class="nav-icon">
+                <svg class="svg-icon" viewBox="0 0 24 24"><rect x="4" y="7" width="16" height="10" rx="1" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 12h16" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+            </div>
+            <span class="nav-txt">我的硬碟</span>
+        </div>
+        <div class="nav-link" id="nav-recent" onclick="setTab('recent')">
+            <div class="nav-icon">
+                <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 8v4l3 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            <span class="nav-txt">最近項目</span>
+        </div>
+        <div class="nav-link" id="nav-trash" onclick="setTab('trash')">
+            <div class="nav-icon">
+                <svg class="svg-icon" viewBox="0 0 24 24"><path d="M7 10h10v10H7zM5 10h14M10 7h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            <span class="nav-txt">垃圾桶</span>
+        </div>
+    </div>
+</aside>
+
+<main>
+    <header id="path-header"></header>
+    <div class="toolbar">
+        <div id="drive-ops" style="display:none; gap:10px">
+            <button class="t-btn single-only" onclick="startRen()">命名</button>
+            <button class="t-btn" style="color:red" onclick="doSoftDel()">刪除</button>
+        </div>
+        <div id="trash-ops" style="display:none; gap:10px">
+            <button class="t-btn" onclick="doRestore()">復原</button>
+            <button class="t-btn" style="color:red" onclick="doHardDel()">永久刪除</button>
+        </div>
+    </div>
+
+    <div class="viewport" id="v-port"></div>
+</main>
+
+<script>
+    let db = []; 
+    let tab = 'drive';
+    let path = ["我的硬碟"];
+    let sel = new Set();
+
+    const ICON_FOLDER = `<svg viewBox="0 0 48 48" class="svg-icon"><path d="M4 10h14l4 4h22v26H4z" fill="#fbbc04"/><path d="M4 14h40v26H4z" fill="#fbc02d"/></svg>`;
+    const ICON_FILE = `<svg viewBox="0 0 48 48" class="svg-icon"><path d="M10 4h20l10 10v30H10z" fill="#e3f2fd"/><path d="M30 4l10 10H30z" fill="#bbdefb"/><path d="M10 4h20l10 10v30H10z" fill="none" stroke="#1a73e8" stroke-width="2.5"/><path d="M18 24h12M18 32h8" fill="none" stroke="#1a73e8" stroke-width="2" stroke-linecap="round"/></svg>`;
+
+    function render() {
+        const h = document.getElementById('path-header');
+        h.innerHTML = `<div class="breadcrumb">${path.map((p,i)=>`<span class="crumb ${i===path.length-1?'active':''}" onclick="goPath(${i})">${p}</span>`).join(' <span style="margin:0 4px;color:#ccc">></span> ')}</div>`;
+
+        const vp = document.getElementById('v-port');
+        vp.innerHTML = "";
+        
+        const isActionable = (tab === 'drive');
+        document.getElementById('btn-up').className = isActionable ? 'btn-action' : 'btn-action disabled';
+        document.getElementById('btn-new').className = isActionable ? 'btn-action' : 'btn-action disabled';
+
+        let items = [];
+        if (tab === 'drive') items = db.filter(x => x.parent === path[path.length-1] && !x.del);
+        else if (tab === 'recent') items = db.filter(x => !x.del && x.type === 'file').sort((a,b)=>b.time-a.time).slice(0,20);
+        else items = db.filter(x => x.del);
+
+        if (items.length === 0) {
+            vp.innerHTML = `<div style="text-align:center;padding-top:100px;color:#999">資料夾是空的</div>`;
+            updateTool(); return;
+        }
+
+        if (tab === 'recent') {
+            const grid = document.createElement('div');
+            grid.className = 'card-grid';
+            items.forEach(item => {
+                const card = document.createElement('div');
+                card.className = `card ${sel.has(item.id)?'sel':''}`;
+                card.onclick = () => toggleSel(item.id);
+                card.innerHTML = `${ICON_FILE.replace('svg-icon','svg-icon-lg')}<div class="f-name">${item.name}</div>`;
+                grid.appendChild(card);
+            });
+            vp.appendChild(grid);
+        } else {
+            const list = document.createElement('div');
+            list.innerHTML = `<div class="list-h"><span>名稱</span><span>修改時間</span><span>大小</span></div>`;
+            items.forEach(item => {
+                const row = document.createElement('div');
+                row.className = `row ${sel.has(item.id)?'sel':''}`;
+                row.onclick = () => toggleSel(item.id);
+                row.ondblclick = () => { if(item.type==='dir' && tab==='drive'){ path.push(item.name); sel.clear(); render(); } };
+                row.innerHTML = `
+                    <div style="display:flex;align-items:center;gap:15px">${item.type==='dir'?ICON_FOLDER:ICON_FILE}<span id="t-${item.id}">${item.name || '未命名資料夾'}</span></div>
+                    <div style="font-size:13px;color:var(--text-sub)">${new Date(item.time).toLocaleTimeString()}</div>
+                    <div style="font-size:13px;color:var(--text-sub)">${item.type==='dir'?'-':'2KB'}</div>
+                `;
+                list.appendChild(row);
+            });
+            vp.appendChild(list);
+        }
+        updateTool();
+    }
+
+    function toggleSel(id) { if(sel.has(id)) sel.delete(id); else sel.add(id); render(); }
+    function updateTool() {
+        const count = sel.size;
+        document.getElementById('drive-ops').style.display = (count > 0 && tab === 'drive') ? 'flex' : 'none';
+        document.getElementById('trash-ops').style.display = (count > 0 && tab === 'trash') ? 'flex' : 'none';
+        if(count > 0 && tab === 'drive') document.querySelector('.single-only').style.display = count === 1 ? 'block' : 'none';
+    }
+
+    function makeFolder() {
+        if(tab !== 'drive') return;
+        const nid = Date.now();
+        db.unshift({ id:nid, name:"", type:'dir', parent:path[path.length-1], del:false, time:nid });
+        render();
+        startRen(nid);
+    }
+
+    function startRen(targetId) {
+        const id = targetId || Array.from(sel)[0];
+        const item = db.find(x=>x.id===id);
+        const el = document.getElementById(`t-${id}`);
+        if(!el) return;
+        el.innerHTML = `<input type="text" class="rename-input" id="eb" value="${item.name}">`;
+        const b = document.getElementById('eb');
+        b.focus(); b.select();
+        b.onblur = () => { 
+            const newName = b.value.trim();
+            if(!newName && item.name === "") {
+                db = db.filter(x => x.id !== id); // 如果新建時為空則移除
+            } else {
+                item.name = newName || "未命名資料夾";
+            }
+            render(); 
+        };
+        b.onkeydown = (e) => { if(e.key==='Enter') b.blur(); };
+    }
+
+    function doSoftDel() { sel.forEach(id => db.find(x=>x.id===id).del = true); sel.clear(); render(); }
+    function doRestore() { sel.forEach(id => db.find(x=>x.id===id).del = false); sel.clear(); render(); }
+    function doHardDel() { db = db.filter(x => !sel.has(x.id)); sel.clear(); render(); }
+
+    function goPath(i) { path=path.slice(0,i+1); tab='drive'; sel.clear(); render(); }
+    function setTab(t) { 
+        tab = t; 
+        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+        document.getElementById('nav-'+t).classList.add('active');
+        path = [t==='drive'?'我的硬碟':(t==='recent'?'最近項目':'垃圾桶')];
+        sel.clear(); render(); 
+    }
+    function toggleSide() { document.getElementById('sidebar').classList.toggle('collapsed'); }
+    function upTrigger() { if(tab==='drive') document.getElementById('up-hidden').click(); }
+    function onUp(inp) { if(inp.files[0]){ db.unshift({id:Date.now(), name:inp.files[0].name, type:'file', parent:path[path.length-1], del:false, time:Date.now()}); render(); } }
+
+    window.onload = render;
+</script>
+</body>
+</html>
