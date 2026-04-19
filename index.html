@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="utf-8">
-    <title>AETHER 10D - LOGIC PRECISION</title>
+    <title>AETHER 10D - RECENT CARD VIEW</title>
     <style>
         :root {
             --accent: #1a73e8;
@@ -16,57 +16,60 @@
 
         body { margin: 0; font-family: 'SF Pro Display', system-ui, sans-serif; display: flex; height: 100vh; background: #fff; overflow: hidden; }
 
+        /* 側邊欄樣式保持 */
         #sidebar { width: 260px; background: var(--bg-side); border-right: 1px solid var(--border); display: flex; flex-direction: column; transition: 0.3s; }
         #sidebar.collapsed { width: 72px; }
-        
         .brand { height: 80px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .avatar { width: 46px; height: 46px; border-radius: 12px; cursor: pointer; border: 2px solid #fff; box-shadow: 0 4px 8px rgba(0,0,0,0.1); object-fit: cover; }
-
-        .side-ops { padding: 10px 12px; display: flex; flex-direction: column; gap: 12px; align-items: stretch; }
+        .side-ops { padding: 10px 12px; display: flex; flex-direction: column; gap: 12px; }
         
         .btn-action { 
             height: 48px; border: none; background: #fff; border-radius: 24px; 
             box-shadow: 0 1px 3px rgba(0,0,0,0.2); cursor: pointer; display: flex; 
             align-items: center; justify-content: flex-start; padding: 0 16px; transition: 0.2s; 
-            overflow: hidden;
         }
         #sidebar.collapsed .btn-action { padding: 0; justify-content: center; width: 48px; margin: 0 auto; }
-        
-        .btn-action.disabled { background: #eee; box-shadow: none; cursor: not-allowed; color: var(--disabled); }
-        .btn-action span { margin-left: 14px; font-weight: 600; font-size: 14px; white-space: nowrap; }
         #sidebar.collapsed .btn-action span { display: none; }
+        .btn-action span { margin-left: 14px; font-weight: 600; font-size: 14px; white-space: nowrap; }
+        .btn-action.disabled { background: #eee; box-shadow: none; cursor: not-allowed; opacity: 0.6; }
 
+        /* 導航選單藍色背景修正 */
         .nav-link { height: 50px; display: flex; align-items: center; border-radius: 0 25px 25px 0; margin-right: 8px; cursor: pointer; color: var(--text-sub); transition: 0.2s; }
-        .nav-link.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+        .nav-link:hover { background: #f1f3f4; }
+        .nav-link.active { background: var(--accent-soft) !important; color: var(--accent) !important; font-weight: 600; }
         .nav-icon { width: 24px; height: 24px; margin-left: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
         .nav-txt { margin-left: 16px; font-size: 14px; white-space: nowrap; }
-        
-        #sidebar.collapsed .nav-link { margin-right: 0; border-radius: 0; justify-content: center; }
-        #sidebar.collapsed .nav-icon { margin-left: 0; }
         #sidebar.collapsed .nav-txt { display: none; }
+        #sidebar.collapsed .nav-icon { margin-left: 0; }
+        #sidebar.collapsed .nav-link { justify-content: center; margin-right: 0; border-radius: 0; }
 
         main { flex: 1; display: flex; flex-direction: column; min-width: 0; position: relative; }
         header { height: 72px; padding: 0 32px; display: flex; align-items: center; border-bottom: 1px solid var(--border); }
         .breadcrumb { display: flex; align-items: center; font-size: 18px; font-weight: 500; color: var(--text-sub); }
-        .crumb { cursor: pointer; padding: 8px 10px; border-radius: 8px; }
-        .crumb.active { color: var(--text-main); font-weight: 700; cursor: default; }
+        .crumb { cursor: pointer; padding: 4px 8px; border-radius: 4px; }
+        .crumb.active { color: var(--text-main); font-weight: 700; }
 
         .toolbar { height: 56px; padding: 0 32px; display: flex; align-items: center; justify-content: flex-end; gap: 10px; }
         .t-btn { background: #fff; border: 1px solid var(--border); padding: 8px 16px; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 500; }
 
         .viewport { flex: 1; overflow-y: auto; padding: 20px 32px 40px; }
+        
+        /* 列表視圖 */
         .list-h { display: grid; grid-template-columns: 3fr 1fr 1fr; padding: 12px 20px; font-size: 12px; color: var(--text-sub); border-bottom: 1px solid var(--border); }
         .row { display: grid; grid-template-columns: 3fr 1fr 1fr; padding: 0 20px; height: 60px; align-items: center; border-radius: 12px; margin-top: 4px; cursor: pointer; border-left: 4px solid transparent; }
         .row:hover { background: #f8f9fa; }
         .row.sel { background: var(--accent-soft); border-left-color: var(--accent); }
-        
-        .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; }
-        .card { border: 1px solid var(--border); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: 0.2s; }
-        .card.sel { background: var(--accent-soft); border-color: var(--accent); }
 
-        .rename-input { border: 2px solid var(--accent); padding: 4px 8px; border-radius: 4px; font-size: 14px; outline: none; width: 80%; }
+        /* 最近項目卡片視圖 */
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; }
+        .card { border: 1px solid var(--border); border-radius: 16px; padding: 24px 16px; display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: 0.2s; background: #fff; }
+        .card:hover { border-color: var(--accent); }
+        .card.sel { background: var(--accent-soft); border-color: var(--accent); }
+        .card .f-name { margin-top: 15px; font-size: 14px; color: var(--text-main); text-align: center; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
         .svg-icon { width: 24px; height: 24px; flex-shrink: 0; }
-        .svg-icon-lg { width: 64px; height: 64px; }
+        .svg-icon-lg { width: 64px; height: 64px; margin-bottom: 8px; }
+        .rename-input { border: 2px solid var(--accent); padding: 4px 8px; border-radius: 4px; font-size: 14px; outline: none; width: 80%; }
     </style>
 </head>
 <body>
@@ -106,8 +109,8 @@
         <div id="drive-ops" style="display:none; gap:10px">
             <div id="single-tools" style="display:none; gap:10px">
                 <button class="t-btn" onclick="startRen()">重命名</button>
-                <button class="t-btn" onclick="alert('移動功能')">移動</button>
-                <button class="t-btn" onclick="alert('複製功能')">複製</button>
+                <button class="t-btn" onclick="alert('移動')">移動</button>
+                <button class="t-btn" onclick="alert('複製')">複製</button>
                 <button class="t-btn" style="color:red" onclick="doSoftDel()">刪除</button>
             </div>
             <div id="multi-tools" style="display:none; gap:10px">
@@ -125,7 +128,10 @@
 </main>
 
 <script>
-    let db = []; 
+    let db = [
+        {id: 1, name: "測試文件.txt", type: 'file', parent: "我的硬碟", del: false, time: Date.now()},
+        {id: 2, name: "項目資料夾", type: 'dir', parent: "我的硬碟", del: false, time: Date.now()}
+    ]; 
     let tab = 'drive';
     let path = ["我的硬碟"];
     let sel = new Set();
@@ -135,10 +141,12 @@
 
     function render() {
         const h = document.getElementById('path-header');
-        h.innerHTML = `<div class="breadcrumb">${path.map((p,i)=>`<span class="crumb ${i===path.length-1?'active':''}" onclick="goPath(${i})">${p}</span>`).join(' > ')}</div>`;
+        h.innerHTML = `<div class="breadcrumb">${path.map((p,i)=>`<span class="crumb ${i===path.length-1?'active':''}" onclick="goPath(${i})">${p}</span>`).join(' <span style="margin:0 4px;color:#ccc">></span> ')}</div>`;
+        
         const vp = document.getElementById('v-port');
         vp.innerHTML = "";
         
+        // 更新按鈕狀態
         const isActionable = (tab === 'drive');
         document.getElementById('btn-up').className = isActionable ? 'btn-action' : 'btn-action disabled';
         document.getElementById('btn-new').className = isActionable ? 'btn-action' : 'btn-action disabled';
@@ -147,24 +155,39 @@
                   : (tab === 'recent' ? db.filter(x => !x.del && x.type === 'file') : db.filter(x => x.del));
 
         if (items.length === 0) {
-            vp.innerHTML = `<div style="text-align:center;padding-top:100px;color:#999">空空如也</div>`;
+            vp.innerHTML = `<div style="text-align:center;padding-top:100px;color:#999">這裡沒有項目</div>`;
             updateTool(); return;
         }
 
-        const list = document.createElement('div');
-        list.innerHTML = `<div class="list-h"><span>名稱</span><span>時間</span><span>大小</span></div>`;
-        items.forEach(item => {
-            const row = document.createElement('div');
-            row.className = `row ${sel.has(item.id)?'sel':''}`;
-            row.onclick = () => toggleSel(item.id);
-            row.ondblclick = () => { if(item.type==='dir' && tab==='drive'){ path.push(item.name); sel.clear(); render(); } };
-            row.innerHTML = `
-                <div style="display:flex;align-items:center;gap:15px">${item.type==='dir'?ICON_FOLDER:ICON_FILE}<span id="t-${item.id}">${item.name}</span></div>
-                <div style="font-size:13px;color:#999">${new Date(item.time).toLocaleTimeString()}</div>
-                <div>${item.type==='dir'?'-':'2KB'}</div>`;
-            list.appendChild(row);
-        });
-        vp.appendChild(list);
+        if (tab === 'recent') {
+            // 最近項目：卡片佈局
+            const grid = document.createElement('div');
+            grid.className = 'card-grid';
+            items.forEach(item => {
+                const card = document.createElement('div');
+                card.className = `card ${sel.has(item.id)?'sel':''}`;
+                card.onclick = () => toggleSel(item.id);
+                card.innerHTML = `${ICON_FILE.replace('svg-icon','svg-icon-lg')}<div class="f-name">${item.name}</div>`;
+                grid.appendChild(card);
+            });
+            vp.appendChild(grid);
+        } else {
+            // 硬碟與垃圾桶：列表佈局
+            const list = document.createElement('div');
+            list.innerHTML = `<div class="list-h"><span>名稱</span><span>修改時間</span><span>大小</span></div>`;
+            items.forEach(item => {
+                const row = document.createElement('div');
+                row.className = `row ${sel.has(item.id)?'sel':''}`;
+                row.onclick = () => toggleSel(item.id);
+                row.ondblclick = () => { if(item.type==='dir' && tab==='drive'){ path.push(item.name); sel.clear(); render(); } };
+                row.innerHTML = `
+                    <div style="display:flex;align-items:center;gap:15px">${item.type==='dir'?ICON_FOLDER:ICON_FILE}<span id="t-${item.id}">${item.name}</span></div>
+                    <div style="font-size:13px;color:#999">${new Date(item.time).toLocaleDateString()}</div>
+                    <div style="font-size:13px;color:#999">${item.type==='dir'?'-':'2KB'}</div>`;
+                list.appendChild(row);
+            });
+            vp.appendChild(list);
+        }
         updateTool();
     }
 
@@ -172,27 +195,13 @@
 
     function updateTool() {
         const count = sel.size;
-        const dOps = document.getElementById('drive-ops');
-        const tOps = document.getElementById('trash-ops');
-        const sTools = document.getElementById('single-tools');
-        const mTools = document.getElementById('multi-tools');
-
-        dOps.style.display = (count > 0 && tab === 'drive') ? 'flex' : 'none';
-        tOps.style.display = (count > 0 && tab === 'trash') ? 'flex' : 'none';
-        
-        if (count === 1) {
-            sTools.style.display = 'flex';
-            mTools.style.display = 'none';
-        } else if (count > 1) {
-            sTools.style.display = 'none';
-            mTools.style.display = 'flex';
-        }
+        document.getElementById('drive-ops').style.display = (count > 0 && tab === 'drive') ? 'flex' : 'none';
+        document.getElementById('trash-ops').style.display = (count > 0 && tab === 'trash') ? 'flex' : 'none';
+        document.getElementById('single-tools').style.display = (count === 1) ? 'flex' : 'none';
+        document.getElementById('multi-tools').style.display = (count > 1) ? 'flex' : 'none';
     }
 
-    // 重名檢查：在當前目錄下檢查
-    function isDuplicate(name) {
-        return db.some(x => x.parent === path[path.length-1] && x.name === name && !x.del);
-    }
+    function isDuplicate(name) { return db.some(x => x.parent === path[path.length-1] && x.name === name && !x.del); }
 
     function makeFolder() {
         if(tab !== 'drive') return;
@@ -210,23 +219,33 @@
         el.innerHTML = `<input type="text" class="rename-input" id="eb" value="${item.name}">`;
         const b = document.getElementById('eb');
         b.focus(); b.select();
-        b.onblur = () => { 
+        b.onblur = () => {
             const val = b.value.trim();
             if(!val && item.name === "") { db = db.filter(x => x.id !== id); }
-            else if(val !== item.name && isDuplicate(val)) {
-                alert("已存在同名項目，請換個名字");
-                setTimeout(() => startRen(id), 10);
-                return;
-            } else { item.name = val || "未命名"; }
-            render(); 
+            else if(val !== item.name && isDuplicate(val)) { alert("名稱重複"); setTimeout(()=>startRen(id),10); return; }
+            else { item.name = val || "未命名"; }
+            render();
         };
         b.onkeydown = (e) => { if(e.key==='Enter') b.blur(); };
+    }
+
+    function setTab(t) { 
+        tab = t; 
+        // 藍色背景渲染修正
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.classList.remove('active');
+        });
+        document.getElementById('nav-' + t).classList.add('active');
+
+        path = [t==='drive'?'我的硬碟':(t==='recent'?'最近項目':'垃圾桶')];
+        sel.clear(); 
+        render(); 
     }
 
     function onUp(inp) {
         if(inp.files[0]){
             const name = inp.files[0].name;
-            if(isDuplicate(name)) return alert("文件已存在，不能上傳相同名字的文件");
+            if(isDuplicate(name)) return alert("重名了");
             db.unshift({id:Date.now(), name, type:'file', parent:path[path.length-1], del:false, time:Date.now()});
             render();
         }
@@ -235,10 +254,10 @@
     function doSoftDel() { sel.forEach(id => db.find(x=>x.id===id).del = true); sel.clear(); render(); }
     function doRestore() { sel.forEach(id => db.find(x=>x.id===id).del = false); sel.clear(); render(); }
     function doHardDel() { db = db.filter(x => !sel.has(x.id)); sel.clear(); render(); }
-    function goPath(i) { path=path.slice(0,i+1); tab='drive'; sel.clear(); render(); }
-    function setTab(t) { tab = t; path = [t==='drive'?'我的硬碟':(t==='recent'?'最近項目':'垃圾桶')]; sel.clear(); render(); }
+    function goPath(i) { path=path.slice(0,i+1); tab='drive'; setTab('drive'); }
     function toggleSide() { document.getElementById('sidebar').classList.toggle('collapsed'); }
     function upTrigger() { if(tab==='drive') document.getElementById('up-hidden').click(); }
+
     window.onload = render;
 </script>
 </body>
